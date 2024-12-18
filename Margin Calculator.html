@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Margin & Markup Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .calculator-container {
+      background: #ffffff;
+      width: 100%;
+      max-width: 500px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333333;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      color: #555555;
+      margin-bottom: 5px;
+    }
+
+    input[type="number"], select {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #dddddd;
+      border-radius: 5px;
+    }
+
+    .btn {
+      display: inline-block;
+      width: 100%;
+      background-color: #007bff;
+      color: #ffffff;
+      padding: 10px 15px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .btn:hover {
+      background-color: #0056b3;
+    }
+
+    .results {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f1f1f1;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    .results span {
+      font-weight: bold;
+      color: #333333;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator-container">
+    <h1>Margin & Markup Calculator</h1>
+    
+    <!-- Section 1: Price to Distributor & Price to Retailer -->
+    <form id="section1Form">
+      <h3>Section 1: Distributor Pricing</h3>
+      <div class="form-group">
+        <label for="priceToDistributor">Price to Distributor (per Case)</label>
+        <input type="number" id="priceToDistributor" placeholder="Enter price to distributor per case" required>
+      </div>
+      <div class="form-group">
+        <label for="distributorCalculationMethod">Distributor Calculation Method</label>
+        <select id="distributorCalculationMethod">
+          <option value="margin">Margin</option>
+          <option value="markup">Markup</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="distributorPercentage">Margin/Markup Percentage</label>
+        <input type="number" id="distributorPercentage" placeholder="Enter margin or markup percentage" required>
+      </div>
+      <button type="button" class="btn" onclick="calculatePriceToRetailer()">Calculate Price to Retailer</button>
+    </form>
+
+    <!-- Results Section 1 -->
+    <div id="section1Results" class="results" style="display: none;">
+      <p>Price to Retailer (adjusted COGS): <span id="priceToRetailer"></span></p>
+    </div>
+
+    <!-- Section 2: Units per Case & Retailer Margin -->
+    <form id="section2Form" style="margin-top: 30px; display: none;">
+      <h3>Section 2: Retailer Pricing</h3>
+      <div class="form-group">
+        <label for="unitsPerCase">Units per Case</label>
+        <input type="number" id="unitsPerCase" placeholder="Enter number of units per case" required>
+      </div>
+      <div class="form-group">
+        <label for="retailerMargin">Retailer Margin (%)</label>
+        <input type="number" id="retailerMargin" placeholder="Enter desired retailer margin" required>
+      </div>
+      <button type="button" class="btn" onclick="calculateRetailPrice()">Calculate Retail Price</button>
+    </form>
+
+    <!-- Results Section 2 -->
+    <div id="section2Results" class="results" style="display: none;">
+      <p>Retail Price per Unit: <span id="retailPriceUnit"></span></p>
+    </div>
+
+    <!-- Section 3: Promotion Discount Calculation -->
+    <form id="section3Form" style="margin-top: 30px; display: none;">
+      <h3>Section 3: Promotion Discount</h3>
+      <div class="form-group">
+        <label for="newRetailPrice">New Desired Retail Price (per Unit)</label>
+        <input type="number" id="newRetailPrice" placeholder="Enter new retail price per unit" required>
+      </div>
+      <button type="button" class="btn" onclick="calculateDiscount()">Calculate Discount</button>
+    </form>
+
+    <!-- Results Section 3 -->
+    <div id="section3Results" class="results" style="display: none;">
+      <p>Penny-for-Penny Discount (per Unit): <span id="pennyForPennyDiscount"></span></p>
+      <p>Margin Neutral Discount: <span id="adjustedPriceToRetailer"></span></p>
+    </div>
+  </div>
+
+  <script>
+    // Section 1: Calculate Price to Retailer
+    function calculatePriceToRetailer() {
+      const priceToDistributor = parseFloat(document.getElementById('priceToDistributor').value);
+      const distributorCalculationMethod = document.getElementById('distributorCalculationMethod').value;
+      const distributorPercentage = parseFloat(document.getElementById('distributorPercentage').value);
+
+      if (isNaN(priceToDistributor) || priceToDistributor <= 0 || isNaN(distributorPercentage) || distributorPercentage <= 0) {
+        alert('Please enter valid values for price, margin/markup, and percentage.');
+        return;
+      }
+
+      let priceToRetailer;
+
+      if (distributorCalculationMethod === 'markup') {
+        priceToRetailer = priceToDistributor * (1 + distributorPercentage / 100);
+      } else if (distributorCalculationMethod === 'margin') {
+        priceToRetailer = priceToDistributor / (1 - distributorPercentage / 100);
+      }
+
+      document.getElementById('priceToRetailer').innerText = `$${priceToRetailer.toFixed(2)}`;
+      document.getElementById('section1Results').style.display = 'block';
+      document.getElementById('section2Form').style.display = 'block';
+    }
+
+    // Section 2: Calculate Retail Price per Unit
+    function calculateRetailPrice() {
+      const priceToRetailer = parseFloat(document.getElementById('priceToRetailer').innerText.replace('$', ''));
+      const unitsPerCase = parseInt(document.getElementById('unitsPerCase').value);
+      const retailerMargin = parseFloat(document.getElementById('retailerMargin').value);
+
+      if (isNaN(unitsPerCase) || unitsPerCase <= 0 || isNaN(retailerMargin) || retailerMargin <= 0) {
+        alert('Please enter valid values.');
+        return;
+      }
+
+      // Retail Price per Unit Calculation (price to retailer divided by units per case and add retailer margin)
+      const retailPriceUnit = (priceToRetailer / unitsPerCase) / (1 - retailerMargin / 100);
+
+      // Output
+      document.getElementById('retailPriceUnit').innerText = `$${retailPriceUnit.toFixed(2)}`;
+      document.getElementById('section2Results').style.display = 'block';
+      document.getElementById('section3Form').style.display = 'block';
+    }
+
+    // Section 3: Calculate Discount for Promotions (Penny-for-Penny)
+    function calculateDiscount() {
+      const originalRetailPriceUnit = parseFloat(document.getElementById('retailPriceUnit').innerText.replace('$', ''));
+      const newRetailPrice = parseFloat(document.getElementById('newRetailPrice').value);
+      const retailerMargin = parseFloat(document.getElementById('retailerMargin').value);
+      const unitsPerCase = parseInt(document.getElementById('unitsPerCase').value);
+      const priceToRetailer = parseFloat(document.getElementById('priceToRetailer').innerText.replace('$', ''));
+
+      if (isNaN(newRetailPrice) || newRetailPrice <= 0) {
+        alert('Please enter valid values.');
+        return;
+      }
+
+      // Penny-for-Penny Discount Calculation
+      const pennyForPennyDiscount = originalRetailPriceUnit - newRetailPrice;
+
+      // Adjusted Price to Retailer (Margin Neutral Discount Calculation)
+      const adjustedPriceToRetailer = (priceToRetailer - (newRetailPrice * unitsPerCase * (1 - retailerMargin / 100))) / unitsPerCase;
+
+      // Output
+      document.getElementById('pennyForPennyDiscount').innerText = `$${pennyForPennyDiscount.toFixed(2)}`;
+      document.getElementById('adjustedPriceToRetailer').innerText = `$${adjustedPriceToRetailer.toFixed(2)}`;
+      document.getElementById('section3Results').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
